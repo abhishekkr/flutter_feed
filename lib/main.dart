@@ -26,6 +26,7 @@ class FeedApp extends StatefulWidget {
 
 class FeedAppState extends State<FeedApp> {
   var _isLoading = true;
+  var topStories;
 
   Future<String> _getJsonBody(String url) async  {
     var client = new http.Client();
@@ -57,18 +58,27 @@ class FeedAppState extends State<FeedApp> {
   }
 
   _fetchFeeds() async {
-     setState(() { _isLoading = true; });
+    setState(() { _isLoading = true; });
 
-     final topStoriesUrl = 'https://hacker-news.firebaseio.com/v0/topstories.json';
+    final topStoriesUrl = 'https://hacker-news.firebaseio.com/v0/topstories.json';
 
-     var topStoriesIdJson = await _getJsonBody(topStoriesUrl);
-      print(convert.jsonDecode(topStoriesIdJson).length);
-     final List<dynamic> topStoriesId = convert.jsonDecode(topStoriesIdJson.toString());
-     var topStories = topStoriesId.sublist(0,2).map(
-         (storyId) => _fetchStory(storyId.toString())
-     ).toList();
+    var topStoriesIdJson = await _getJsonBody(topStoriesUrl);
+    print(convert.jsonDecode(topStoriesIdJson).length);
+    final List<dynamic> topStoriesId = convert.jsonDecode(topStoriesIdJson.toString());
+    print(topStoriesId.length);
 
-     setState(() { _isLoading = false; });
+    final List<dynamic> topStoriesList = [];
+    for (var i = 0; i < topStoriesId.length; i = i+1){
+      var id = topStoriesId[i].toString();
+      print(id);
+      var storyForId = await _fetchStory(id);
+      topStoriesList.add(storyForId);
+    }
+
+    setState(() {
+      _isLoading = false;
+      this.topStories = topStoriesList;
+    });
   }
 
   @override
@@ -88,7 +98,12 @@ class FeedAppState extends State<FeedApp> {
       ),
       body: new Center(
           child: _isLoading ? new CircularProgressIndicator() :
-                              new Text('finished reloading'),
+            new ListView.builder(
+              itemCount: this.topStories != null ? this.topStories.length : 0,
+              itemBuilder: (context, idx) {
+                return new Text(this.topStories[idx].toString());
+              },
+            ),
       )
     );
   }
