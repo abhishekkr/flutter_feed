@@ -6,7 +6,7 @@ class HomeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Feeds',
+      title: 'Fly on Feeds',
       theme: ThemeData(
         primaryColor: Colors.blue,
       ),
@@ -23,14 +23,28 @@ class FeedApp extends StatefulWidget {
 }
 
 class FeedAppState extends State<FeedApp> {
+  var _isLoading = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Feeds'),
+        actions: <Widget>[
+          new IconButton(
+              icon: new Icon(Icons.refresh),
+              onPressed: () {
+                print('reloading...');
+                setState(() {
+                  _isLoading = _isLoading ? false : true;
+                });
+              },
+          )
+        ],
       ),
       body: new Center(
-          child: new CircularProgressIndicator(),
+          child: _isLoading ? new CircularProgressIndicator() :
+                              new Text('finished reloading'),
       )
     );
   }
